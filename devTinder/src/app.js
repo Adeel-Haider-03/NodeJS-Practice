@@ -1,27 +1,65 @@
 const express = require('express');
 const connectDB = require('./config/database');
 const User = require('./models/user');
+const { validateSignupData,validateLoginData } = require('./utils/helper');
+const bcrypt = require('bcrypt');
+
 const app = express();
 
 
 app.use(express.json());
 
 app.post('/signup', async (req, res) => {
-
-
-    // const user=new User({
-    //     frstName:"Adeel",      we have made mistake here so in database everything will be saved except firstname & since it is not required as true so it won't throw an error
-    //     lastName:"Haider",
-    //     emailId:"adeel@gmail.com",
-    //     password:"adeel123"
-    // })
     
-        const user=new User(req.body)
     try {
-        await user.save()
-        res.status(200).send("user saved successfully")
+        //user validation
+        const isValid = validateSignupData(req.body);
+
+        const { firstName, lastName, emailId, password } = req.body;
+
+        if(isValid){
+
+            //hashing password
+            const hashPassword=await bcrypt.hash(password, 10);
+
+            const user=new User({
+                firstName,
+                lastName,
+                emailId,
+                password: hashPassword //store hashed password
+            })
+            await user.save()
+            res.status(200).send("user saved successfully")
+
+        }
+    
     } catch (error) {
-        res.status(400).send("Error saving user "+ error.message)
+        res.status(400).send("ERROR:"+ error.message);
+    }
+})
+
+app.post('/login', async (req, res) => {
+    try {
+        const isvalidlogin=validateLoginData(req.body)
+
+        const {emailId,password}=req.body
+
+        if(isvalidlogin){
+            const user=await User.findOne({emailId:emailId})  //find user
+            if(!user){
+                throw new Error ("Invalid credientials")
+            }
+            
+            const isvalidPassword=await bcrypt.compare(password,user.password)  //user password in DB is same as entered password??
+            if(!isvalidPassword){
+                throw new Error("Invalid crediential")
+            }
+            else{
+                res.send("Login successfully")
+            }
+        }
+    } catch (error) {
+        res.send("ERORR:"+error.message)
     }
 })
 
