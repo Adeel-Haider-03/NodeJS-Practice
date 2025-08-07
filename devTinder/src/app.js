@@ -80,7 +80,7 @@ res.send(user)
     } catch (error) {
         res.send("error fetching users")
     }
-})
+})  
 
 app.delete('/deleteUser',async(req,res)=>{
     try {
@@ -115,5 +115,6 @@ connectDB()
 .catch((err)=>{
     console.error("Database connection failed", err);
 });
+
 
 
