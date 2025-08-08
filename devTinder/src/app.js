@@ -3,11 +3,12 @@ const connectDB = require('./config/database');
 const User = require('./models/user');
 const { validateSignupData,validateLoginData } = require('./utils/helper');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser')
 
 const app = express();
 
-
 app.use(express.json());
+app.use(cookieParser())
 
 app.post('/signup', async (req, res) => {
     
@@ -55,13 +56,27 @@ app.post('/login', async (req, res) => {
                 throw new Error("Invalid crediential")
             }
             else{
+                res.cookie("token","asfdlkdjksas")
                 res.send("Login successfully")
+                
             }
         }
     } catch (error) {
         res.send("ERORR:"+error.message)
     }
 })
+
+app.get('/profile',async(req,res)=>{
+    try {
+        const user=await User.find({emailId:req.body.emailId})
+        console.log(req.cookies);
+        
+        res.send(user)
+    } catch (error) {
+        res.send("ERROR:"+ error.message)
+    }
+})
+
 
 app.get('/getUser',async(req,res)=>{
     try {
@@ -80,7 +95,7 @@ res.send(user)
     } catch (error) {
         res.send("error fetching users")
     }
-})  
+})
 
 app.delete('/deleteUser',async(req,res)=>{
     try {
@@ -115,6 +130,5 @@ connectDB()
 .catch((err)=>{
     console.error("Database connection failed", err);
 });
-
 
 
