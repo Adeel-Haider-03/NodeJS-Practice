@@ -4,6 +4,7 @@ const User = require('./models/user');
 const { validateSignupData,validateLoginData } = require('./utils/helper');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser')
+const jwt=require('jsonwebtoken')
 
 const app = express();
 
@@ -56,7 +57,11 @@ app.post('/login', async (req, res) => {
                 throw new Error("Invalid crediential")
             }
             else{
-                res.cookie("token","asfdlkdjksas")
+                const token=jwt.sign({id:user._id},"secretkey")
+                console.log(token);
+                
+
+                res.cookie("token",token)
                 res.send("Login successfully")
                 
             }
@@ -69,7 +74,10 @@ app.post('/login', async (req, res) => {
 app.get('/profile',async(req,res)=>{
     try {
         const user=await User.find({emailId:req.body.emailId})
-        console.log(req.cookies);
+        const cookie=req.cookies
+        const {token}=cookie
+        const decoded=jwt.verify(token,"secretkey")
+        console.log(decoded);
         
         res.send(user)
     } catch (error) {
