@@ -1,5 +1,7 @@
 const mongoose= require('mongoose');
 const validator=require("validator")
+const jwt=require('jsonwebtoken')
+const bcrypt=require('bcrypt')
 
 const userSchema = new mongoose.Schema({
     firstName: {                            //we can write like this also
@@ -56,6 +58,24 @@ skills:{
 }
 
 },{timestamps:true})
+
+//schema method 
+// we can use jwt sign method for user here to make clean more readeable
+
+userSchema.methods.getJWT =async function(){
+    const user=this;
+
+    const token=await jwt.sign({id:user._id},process.env.JWT_SECRET_KEY,{expiresIn:'1d'})
+
+    return token;
+}
+
+userSchema.methods.validatePassword= async function (userInputPassword){
+    const user =this;
+    const isvalidPassword=await bcrypt.compare(userInputPassword,user.password)
+
+    return isvalidPassword
+}
 
 const User=mongoose.model('User',userSchema)
 
