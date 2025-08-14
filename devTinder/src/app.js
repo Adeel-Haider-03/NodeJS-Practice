@@ -4,7 +4,7 @@ const User = require('./models/user');
 const { validateSignupData,validateLoginData } = require('./utils/helper');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser')
-const jwt=require('jsonwebtoken')
+const {userAuth}=require('./middlewares/userAuth')
 
 const app = express();
 
@@ -52,16 +52,18 @@ app.post('/login', async (req, res) => {
                 throw new Error ("Invalid credientials")
             }
             
-            const isvalidPassword=await bcrypt.compare(password,user.password)  //user password in DB is same as entered password??
+            const isvalidPassword=user.validatePassword(password)      //user password in DB is same as entered password??
+
             if(!isvalidPassword){
                 throw new Error("Invalid crediential")
             }
             else{
-                const token=jwt.sign({id:user._id},"secretkey")
-                console.log(token);
+                //creating a jwt token
+                const token=user.getJWT()  //we have simply used logic in schema methods instead here to make code more readable
                 
-
-                res.cookie("token",token)
+                //sending cookie(jwt token)
+                //we can also expire cookie, httpOnly mean cookie will be stored for http site only not https
+                res.cookie("token",token,{expires: new Date(Date.now() + 8 * 3600000),httpOnly:true}) // cookie will be removed after 8 hours
                 res.send("Login successfully")
                 
             }
@@ -71,20 +73,21 @@ app.post('/login', async (req, res) => {
     }
 })
 
-app.get('/profile',async(req,res)=>{
+app.get('/profile',userAuth,async(req,res)=>{
     try {
-        const user=await User.find({emailId:req.body.emailId})
-        const cookie=req.cookies
-        const {token}=cookie
-        const decoded=jwt.verify(token,"secretkey")
-        console.log(decoded);
-        
+        //we get user from req attached in middleware
+        const user=req.user
         res.send(user)
+        
     } catch (error) {
         res.send("ERROR:"+ error.message)
     }
 })
 
+app.post('/sendConnection',userAuth,async(req,res)=>{
+    //we get user because we have attach uer to request in middleware
+        res.send(req.user.firstName + " sent a connection request")
+})
 
 app.get('/getUser',async(req,res)=>{
     try {
