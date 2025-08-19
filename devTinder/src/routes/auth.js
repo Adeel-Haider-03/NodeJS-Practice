@@ -1,8 +1,8 @@
 const express = require('express');
 const router=express.Router()
-const { validateSignupData,validateLoginData } = require('./utils/helper');
+const { validateSignupData,validateLoginData } = require('../utils/helper');
 const bcrypt = require('bcrypt');
-const User = require('./models/user');
+const User = require('../models/user');
 
 
 
@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
             }
             else{
                 //creating a jwt token
-                const token=user.getJWT()  //we have simply used logic in schema methods instead here to make code more readable
+                const token=await user.getJWT()  //we have simply used logic in schema methods instead here to make code more readable
                 
                 //sending cookie(jwt token)
                 //we can also expire cookie, httpOnly mean cookie will be stored for http site only not https
@@ -67,3 +67,5 @@ router.post('/login', async (req, res) => {
         res.send("ERORR:"+error.message)
     }
 })
+
+module.exports=router;
