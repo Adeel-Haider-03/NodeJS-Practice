@@ -25,4 +25,15 @@ router.patch('/update',async(req,res)=>{
     }
 })
 
+app.delete('/deleteUser',async(req,res)=>{
+    try {
+      //  await User.deleteOne({emailId:"khan@gmail.com"}) //Deletes the first document that matches conditions from the collection
+        
+        await User.findByIdAndDelete("6832112d3b3ab1cf41d4f306")
+      res.send("user deleted successfully")
+    } catch (error) {
+        res.send("user not deleted succesfully")
+    }
+})
+
 module.exports=router;
