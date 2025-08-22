@@ -34,4 +34,13 @@ if(!emailId || !validator.isEmail(emailId)){
     }
 }
 
-module.exports={validateSignupData,validateLoginData};
+const validateUpdate=(reqData)=>{
+
+    const allowedUpdate=['firstName','lastName','gender','skills','age']
+
+    const isUpdateAllowed=Object.keys(reqData).every(field=>allowedUpdate.includes(field))
+
+    return isUpdateAllowed;
+}
+
+module.exports={validateSignupData,validateLoginData,validateUpdate};
